@@ -1623,6 +1623,7 @@ function makeShare() {
     $('#shareBox').innerHTML = ''; const im = new Image(); im.src = c.toDataURL('image/png'); im.alt = '共有カード'; $('#shareBox').appendChild(im);
   } catch (e) { console.warn('share card', e); shareCanvas = null; }
 }
+const HASHTAGS = ['ノジョさんをさがせ'];      // ← 投稿に付けるハッシュタグ（#は付けない）
 const shareText = () => `ノジョさんをさがせ！　${CFG.TOTAL}体を ${fmt(state.finalT)} でクリア（お題 ${state.ch.filter(c => c.st === 1).length}/3 達成）${plan.mode === 'daily' ? '　今日のチャレンジ' : ''}`;
 const gameUrl = () => location.origin + location.pathname;
 const shareBlob = () => new Promise(res => shareBlobCache ? res(shareBlobCache) : shareCanvas ? shareCanvas.toBlob(res, 'image/png') : res(null));
@@ -1631,11 +1632,11 @@ $('#btnSaveImg').onclick = async () => { const b = await shareBlob(); if (b) dow
 $('#btnShare').onclick = async () => {
   const b = await shareBlob(); if (!b) return;
   const f = new File([b], 'nojo-seek-result.png', { type: 'image/png' });
-  try { if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], text: shareText(), url: gameUrl() }); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
+  try { if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], text: shareText() + '\n' + HASHTAGS.map(h => '#' + h).join(' '), url: gameUrl() }); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
   downloadBlob(b, 'nojo-seek-result.png'); toast('画像を保存しました。Xなどに貼りつけて投稿してください');
 };
-$('#btnTweet').onclick = () => {      // 投稿は、ゲーム紹介の文とURLだけ（画像は、URLを貼ると出る紹介カード＝ogp.png）。スコアは入れない
-  window.open('https://x.com/intent/post?text=' + encodeURIComponent('ノジョさんをさがせ！　隠れたノジョさんを見つけよう') + '&url=' + encodeURIComponent(gameUrl()), '_blank');
+$('#btnTweet').onclick = () => {      // 投稿：クリア結果の文＋ハッシュタグ＋URL（画像は、URLを貼ると出る紹介カード＝ogp.png。結果の画像は「画像を共有／保存」から）
+  window.open('https://x.com/intent/post?text=' + encodeURIComponent(shareText()) + '&hashtags=' + encodeURIComponent(HASHTAGS.join(',')) + '&url=' + encodeURIComponent(gameUrl()), '_blank');
 };
 
 /* =========================================================
