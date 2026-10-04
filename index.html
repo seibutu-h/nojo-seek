@@ -90,6 +90,7 @@
   .credit { margin-top:8px; font-size:11px; opacity:.6; line-height:1.6; text-align:left; }
   .credit summary { cursor:pointer; text-align:center; }
   .credit p { margin:6px 0; } .credit a { color:inherit; }
+  .more { margin:6px 0 4px; font-size:13px; opacity:.85; } .more summary { cursor:pointer; opacity:.8; } .more ul { margin-top:6px; }
   .foot { margin-top:16px; font-size:11.5px; opacity:.6; line-height:1.6; }
   .row { display:flex; align-items:center; gap:10px; margin:10px 0; font-size:14px; }
   input[type=range] { flex:1; accent-color:var(--accent); }
@@ -197,20 +198,22 @@
     <h1>ノジョさんをさがせ！</h1>
     <div class="sub">散らかった部屋のどこかに隠れているノジョさんを見つけて、ぜんぶ集めよう。<br><span id="totalNote"></span></div>
     <ul>
-      <li class="only-pc"><b>W A S D</b> で移動、<b>マウス</b>で見まわす</li>
-      <li class="only-pc">見つけたら画面中央の点に合わせて<b>クリック</b>で拾う（引き出しも<b>クリック</b>で開け閉め）</li>
-      <li class="only-touch">画面の<b>左半分</b>（左下の○）を指でなぞって<b>移動</b>、<b>右半分</b>（右下の○）で<b>視点スティック</b></li>
-      <li class="only-touch">ノジョさんを<b>タップ</b>で拾う（引き出しもタップで開け閉め）。横向きが遊びやすいです</li>
-      <li class="only-pc"><b>Shift</b>でダッシュ、<b>右クリック長押し</b>でズーム</li>
-      <li class="only-touch">右半分に指を置いて、<b>スティックのように倒し続けると視点が回り続けます</b>（右下の○が目印）。ダッシュ・ズームのボタンもあります</li>
-      <li>クッション、ぬいぐるみ、つみき、ふとん、カーテン、ランプのかさなどは<b>1回だけ動かせます</b>。床の<b>おもちゃ箱</b>は<b>「ふた(クリック)をあける」か「E でどかす」</b>を選べます（棚の上の小箱は、どかすだけ）（スマホはタップで選択）</li>
-      <li>つながった<b>2つの部屋（こどもべや／リビング）</b>に、<b>10体ずつ</b>隠れています。配置は<b>毎回ランダム</b>。20体ぜんぶ見つけたらクリア！</li>
-      <li><b>お題が3つ</b>出ます。ぜんぶ達成すると<b>1つにつき10秒、最大30秒</b>タイムが短くなります（達成できる配置のお題だけが出ます）</li>
-      <li>ノジョさんには<b>ときどき色違い</b>がいます（全100種）。見つけると<b>ずかん</b>に載ります</li>
-      <li>ランキング：<b>最短クリアタイム</b>／<b>累計ゲット数</b>／<b>今日のチャレンジ</b>（その日だけの共通配置の最短タイム）。<b>PC・スマホ別</b>と<b>統合</b>があります（Googleログインで登録）</li>
+      <li class="only-pc"><b>WASD</b>で移動、<b>マウス</b>で見まわす、見つけたら<b>クリック</b>で拾う</li>
+      <li class="only-touch">左の○で<b>移動</b>、右の○で<b>見まわす</b>、見つけたら<b>タップ</b>で拾う（横向きがおすすめ）</li>
+      <li>部屋は<b>こどもべや</b>と<b>リビング</b>。ぜんぶ見つけたらクリア！</li>
+      <li><b>お題が3つ</b>出ます。達成するたびにタイムが<b>10秒短く</b>（最大30秒）</li>
+      <li>引き出しやクッションなどは、あけたり動かしたりできます</li>
     </ul>
+    <details class="more"><summary>くわしい操作・ランキングなど</summary><ul>
+      <li class="only-pc"><b>Shift</b>でダッシュ、<b>右クリック長押し</b>でズーム。引き出しも<b>クリック</b>で開け閉め</li>
+      <li class="only-touch">右の○を<b>倒し続けると視点が回り続けます</b>。ダッシュ・ズームのボタンもあります。引き出しもタップで開け閉め</li>
+      <li>クッション、ぬいぐるみ、つみき、ふとん、カーテン、ランプのかさなどは<b>1回だけ動かせます</b>。床の<b>おもちゃ箱</b>は<b>「ふたをあける」か「どかす」</b>を選べます（棚の上の小箱は、どかすだけ）</li>
+      <li>お題は、達成できる配置のものだけが出ます</li>
+      <li>ノジョさんには<b>ときどき色違い</b>がいます（全100種）。見つけると<b>ずかん</b>に載ります</li>
+      <li>ランキングは<b>最短クリアタイム</b>／<b>累計ゲット数</b>／<b>今日のチャレンジ</b>（その日だけの共通配置）。PC・スマホ別と統合があり、Googleログインで登録します</li>
+    </ul></details>
     <div id="myRec"></div>
-    <div class="time-note">⏱ <b>タイムは、ブラウザでこのページを開いている間ずっと進みます。</b><br>ポーズ中や、別のタブを見ている間も止まりません。休憩したいときはページを閉じてください（次回はセーブした時点から再開します）。</div>
+    <div class="time-note">⏱ タイムは<b>ページを開いている間ずっと進みます</b>（ポーズ中も止まりません）。休憩は、ページを閉じてください。</div>
     <div class="btns">
       <button id="btnNew">はじめる</button>
       <button id="btnDaily" class="sec">今日のチャレンジ</button>
