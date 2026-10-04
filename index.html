@@ -212,7 +212,7 @@
       <li>クッション、ぬいぐるみ、つみき、ふとん、カーテン、ランプのかさなどは<b>1回だけ動かせます</b>。床の<b>おもちゃ箱</b>は<b>「ふたをあける」か「どかす」</b>を選べます（棚の上の小箱は、どかすだけ）</li>
       <li>お題は、達成できる配置のものだけが出ます</li>
       <li>ノジョさんには<b>ときどき色違い</b>がいます（全100種）。見つけると<b>ずかん</b>に載ります</li>
-      <li>ランキングは<b>最短クリアタイム</b>／<b>累計ゲット数</b>／<b>今日のチャレンジ</b>（その日だけの共通配置）。PC・スマホ別と統合があり、Googleログインで登録します</li>
+      <li>ランキングは<b>最短クリアタイム</b>／<b>累計ゲット数</b>／<b>今日のチャレンジ</b>（その日だけの共通配置）。PC・スマホ別と統合があります。ログインなしでも登録できます</li>
     </ul></details>
     <div id="myRec"></div>
     <div class="time-note">⏱ タイムは<b>ページを開いている間ずっと進みます</b>（ポーズ中も止まりません）。休憩は、ページを閉じてください。</div>
@@ -402,7 +402,13 @@ function clearSave() { try { localStorage.removeItem(SAVE_KEY); } catch (e) {} }
 
 // ブラウザをまたぐ引き継ぎ（Googleログイン）とランキング（GAS: gas/Code.gs）。CFG.GAS_URL と CFG.GOOGLE_CLIENT_ID が空のあいだは、端末の中だけで動く
 const DEVICE = isTouch ? 'mobile' : 'pc';
-const NICK_KEY = 'nojo-seek-nick', LOGIN_KEY = 'nojo-seek-login';
+const NICK_KEY = 'nojo-seek-nick', LOGIN_KEY = 'nojo-seek-login', ANON_KEY = 'nojo-seek-aid';
+// ログインなしでもランキングに載せるための、ブラウザごとの匿名ID（ログインすると、その記録がログイン側に合体する）
+const anonId = (() => {
+  try { let v = localStorage.getItem(ANON_KEY); if (v && /^[A-Za-z0-9-]{16,40}$/.test(v)) return v;
+    const a = new Uint8Array(16); crypto.getRandomValues(a); v = [...a].map(x => x.toString(16).padStart(2, '0')).join(''); localStorage.setItem(ANON_KEY, v); return v;
+  } catch (e) { return ''; }
+})();
 const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const Cloud = {
   token: null, exp: 0, _ls: 0,
@@ -422,22 +428,21 @@ const Cloud = {
   },
   async signIn(onDone) {
     if (!this.enabled) return false;
-    if (DEBUG && params.get('fakeauth')) { this.token = 'FAKE:' + params.get('fakeauth'); this.exp = Date.now() + 36e5; onDone && onDone(); return true; }
+    if (DEBUG && params.get('fakeauth')) { this.token = 'FAKE:' + params.get('fakeauth'); this.exp = Date.now() + 36e5; try { await this.call('link'); } catch (e) {} onDone && onDone(); return true; }
     await this.loadGIS();
-    google.accounts.id.initialize({ client_id: CFG.GOOGLE_CLIENT_ID, auto_select: true, callback: r => { Cloud.setToken(r.credential); onDone && onDone(); } });
+    google.accounts.id.initialize({ client_id: CFG.GOOGLE_CLIENT_ID, auto_select: true, callback: async r => { Cloud.setToken(r.credential); try { await Cloud.call('link'); } catch (e) {} onDone && onDone(); } });
     const el = $('#gbtn'); el.innerHTML = '';
     google.accounts.id.renderButton(el, { theme: 'filled_black', size: 'large', text: 'signin_with', locale: 'ja' });
     google.accounts.id.prompt();
     return true;
   },
   async call(action, body = {}) {
-    const r = await fetch(CFG.GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ action, idToken: this.token, device: DEVICE }, body)) });
+    const r = await fetch(CFG.GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(Object.assign({ action, idToken: this.loggedIn ? this.token : undefined, anonId, device: DEVICE }, body)) });
     return r.json();
   },
   board(kind, scope) { return this.call('board', { kind, scope, day: todayStr() }); },
   async submitClear(rec) {
     if (!this.enabled) return { status: 'off' };
-    if (!this.loggedIn) return { status: 'nologin' };
     try { const r = await this.call('clear', Object.assign({ nick: this.nick }, rec)); return r.ok ? { status: 'ok', ranks: r.ranks } : { status: 'err', error: r.error }; } catch (e) { return { status: 'err', error: String(e) }; }
   },
   async pload() { if (!this.loggedIn) return null; try { const r = await this.call('pload'); return r.ok ? r.data : null; } catch (e) { return null; } },
@@ -1531,10 +1536,9 @@ function finish() {
     if (res.status === 'ok') { stats.unsent = Math.max(0, (stats.unsent || 0) - unsent); writeStats(); }
     const rk = res.ranks, nm = DEVICE === 'pc' ? 'PC' : 'スマホ';
     const line = (label, o) => o && o.all ? `${label} 統合${o.all}位／${nm}${o[DEVICE]}位` : '';
-    submitText = res.status === 'ok' ? 'ランキングに登録しました　' + [line('最短', rk.run), rk.daily ? line('今日のチャレンジ', rk.daily) : '', line('累計', rk.total)].filter(Boolean).join('　') :
+    submitText = res.status === 'ok' ? 'ランキングに登録しました　' + (Cloud.loggedIn ? '' : '（ログインなし。Googleログインすると、別のブラウザでも記録を引き継げます）　') + [line('最短', rk.run), rk.daily ? line('今日のチャレンジ', rk.daily) : '', line('累計', rk.total)].filter(Boolean).join('　') :
       res.status === 'off' ? 'ランキングは準備中です（記録はこの端末に保存されました）。' :
-      res.status === 'nologin' ? 'Googleログインすると、ランキングに登録されます（はじめの画面からログインできます）。' :
-      'ランキングに送信できませんでした。通信状況を確認してください。（記録はこの端末に保存されています）';
+            'ランキングに送信できませんでした。通信状況を確認してください。（記録はこの端末に保存されています）';
     $('#clearNote').textContent = submitText;
   });
   save(); resetTouch(); $('#touch').classList.add('hidden');
@@ -2074,7 +2078,7 @@ function frame(now) {
   nickEl.addEventListener('keydown', e => e.stopPropagation());
   const loginUI = () => {
     $('#loginNote').textContent = !Cloud.enabled ? 'ランキングとGoogleログインは準備中です。いまは、このブラウザの中だけにセーブされます。' :
-      Cloud.loggedIn ? 'ログイン中です。ランキングに登録され、別のブラウザでも続きから遊べます。' : 'Googleログインすると、ランキングに登録され、別のブラウザでも続きから遊べます。';
+      Cloud.loggedIn ? 'ログイン中です。別のブラウザでも続きから遊べて、記録も引き継がれます。' : 'ランキングは、ログインなしでも登録できます。Googleログインすると、別のブラウザでも続きから遊べて、記録も引き継げます。';
     $('#btnLogin').disabled = !Cloud.enabled || Cloud.loggedIn; $('#btnLogin').textContent = Cloud.loggedIn ? 'ログイン中 ✓' : 'Googleでログイン';
     $('#gbtn').style.display = Cloud.loggedIn ? 'none' : '';
   };
