@@ -321,8 +321,8 @@ const CFG = {
   SEED: 0,                   // 今回の配置の種（下で決める）。ランダム配置、または今日のチャレンジ（その日は全員同じ配置）
   REACH: 3.0,                // 拾える距離(m)
   EYE: 1.55,
-  GAS_URL: (DEBUG && params.get('gas')) || '',                                   // ← ランキング／セーブ用のGAS WebアプリURL（gas/Code.gs をデプロイして入れる）
-  GOOGLE_CLIENT_ID: DEBUG && params.get('fakeauth') ? 'dummy' : '',            // ← Googleログイン用のクライアントID
+  GAS_URL: (DEBUG && params.get('gas')) || 'https://script.google.com/macros/s/AKfycbwvRp3iu3Kr8ZPsYqmKwEm_-SHRBurfQSq8PVn8NdLHtYI5bbHaMmjfJyVnYKDlxzhh/exec',                                   // ← ランキング／セーブ用のGAS WebアプリURL（gas/Code.gs をデプロイして入れる）
+  GOOGLE_CLIENT_ID: DEBUG && params.get('fakeauth') ? 'dummy' : '238561939721-dlash0vfnh6gsea72eo8p4rhdoqcjeot.apps.googleusercontent.com',            // ← Googleログイン用のクライアントID
 };
 const SAVE_KEY = 'nojo-seek-save-v1';
 const SENS_KEY = 'nojo-seek-sens';
