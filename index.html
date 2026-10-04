@@ -2114,7 +2114,7 @@ function frame(now) {
     const mine = `じぶんの記録：最短 ${stats.best === null ? '--:--' : fmt(stats.best)} ／ 累計 ${stats.totalGot} 体`;
     if (!Cloud.enabled) { tbl.innerHTML = ''; note.textContent = `ランキングは準備中です。${mine}`; return; }
     const desc = RK.kind === 'daily' ? `今日（${todayStr()}）の共通配置での最短タイム。` : RK.kind === 'total' ? '見つけたノジョさんの累計。' : '1回のクリアタイムの自己最短。';
-    note.textContent = desc + (Cloud.loggedIn ? '' : '（登録するにはGoogleログインが必要です）');
+    note.textContent = desc + (Cloud.loggedIn ? '' : '（ログインなしでも登録できます。ログインすると、別のブラウザでも記録を引き継げます）');
     tbl.innerHTML = '<tr><td>読み込み中…</td></tr>';
     const mySeq = ++loadBoard.seq;
     try {
